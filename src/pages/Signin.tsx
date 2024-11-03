@@ -13,8 +13,20 @@ export default function Signin() {
 
   const { loading, signIn } = useSignin();
 
+  // Get the query parameters
+  const queryParams = new URLSearchParams(window.location.search);
+  const urlParam = queryParams.get("url") as string; // Extract the 'url' query parameter
+
   const onSubmit: SubmitHandler<LoginFormType> = async (data) => {
-    await signIn(data);
+    let redirect: string;
+
+    if (!urlParam || urlParam === "/signin" || urlParam === "signup") {
+      redirect = "/home";
+    } else {
+      redirect = urlParam;
+    }
+
+    await signIn(data, redirect);
   };
 
   return (

@@ -13,16 +13,19 @@ import {
 } from "../types/success-response-types";
 import { User } from "../types/entities";
 import { AxiosError } from "axios";
-import { axios } from "../axios/axios";
 import { CODE, SUCCESS_CODE } from "../types/error-codes";
 import { setLoadingUser, setUser } from "../store/auth.slice";
 import { useDispatch } from "react-redux";
+import useAxios from "../hooks/useAxios";
+import axiosMain from "axios";
+import { useNavigate } from "react-router-dom";
 
 const API_URL = "/api/users";
 
 export const useSignUp = () => {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
+  const { axios } = useAxios();
 
   const signUp = async (userFormData: CreateAccountFormType) => {
     try {
@@ -67,8 +70,10 @@ export const useSignUp = () => {
 export const useSignin = () => {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
+  const { axios } = useAxios();
+  const navigate = useNavigate();
 
-  const signIn = async (userFormData: LoginFormType) => {
+  const signIn = async (userFormData: LoginFormType, urlParam: string) => {
     try {
       setLoading(true);
       const { data } = await axios.post<SingleItemResponseType<User>>(
@@ -80,6 +85,7 @@ export const useSignin = () => {
 
       if (data.code === SUCCESS_CODE.SUCCESS) {
         dispatch(setUser(data.data));
+        navigate(urlParam);
       } else {
         throw new Error();
       }
@@ -110,8 +116,10 @@ export const useSignin = () => {
 
 export const useGetProfile = () => {
   const dispatch = useDispatch();
+  const { axios } = useAxios();
 
   const getProfile = async () => {
+    dispatch(setLoadingUser(true));
     try {
       const { data } = await axios.get<SingleItemResponseType<User>>(
         `${API_URL}/profile`
@@ -132,6 +140,7 @@ export const useGetProfile = () => {
 
 export const useLogout = () => {
   const dispatch = useDispatch();
+  const { axios } = useAxios();
 
   const logout = async () => {
     try {
@@ -169,6 +178,7 @@ export const useLogout = () => {
 export const useUpdateAccount = () => {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
+  const { axios } = useAxios();
 
   const updateAccount = async (userFormData: UpdateAccountFormType) => {
     try {
@@ -213,6 +223,7 @@ export const useUpdateAccount = () => {
 
 export const useUpdatePassword = () => {
   const [loading, setLoading] = useState(false);
+  const { axios } = useAxios();
 
   const updatePassword = async (userFormData: UpdatePasswordFormType) => {
     try {
@@ -255,4 +266,38 @@ export const useUpdatePassword = () => {
   };
 
   return { loading, updatePassword };
+};
+
+export const useRefreshToken = () => {
+  // This axios is to avoid an infinite loop as our custom axios is also using this hook.
+  const axios = axiosMain.create({
+    withCredentials: true,
+  });
+  const dispatch = useDispatch();
+
+  const refreshToken = async () => {
+    try {
+      const { data } = await axios.post<SimpleSuccessResponseType>(
+        `${API_URL}/token`
+      );
+      return data;
+    } catch (err) {
+      const error = err as AxiosError<ErrorResponseType>;
+      console.log(error);
+
+      failedToast("Your session has expired, login to continue");
+
+      setTimeout(() => {
+        dispatch(setUser(null));
+
+        const { pathname } = window.location;
+
+        if (pathname !== "/signin" && pathname !== "/signup") {
+          window.location.href = `/signin?url=${pathname}`;
+        }
+      }, 4000);
+    }
+  };
+
+  return { refreshToken };
 };
