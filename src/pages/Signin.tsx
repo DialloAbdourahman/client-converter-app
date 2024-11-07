@@ -1,8 +1,11 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { LoginFormType } from "../types/forms";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { useSignin } from "../api/AuthApi";
 import LoadingLargeButton from "../components/loading/LoadingLargeButton";
+import { useEffect } from "react";
+import { AuthInitialStateType } from "../store/auth.slice";
+import { useSelector } from "react-redux";
 
 export default function Signin() {
   const {
@@ -11,9 +14,14 @@ export default function Signin() {
     formState: { errors },
   } = useForm<LoginFormType>();
 
+  const { user }: AuthInitialStateType = useSelector(
+    (state: any) => state.authSlice as AuthInitialStateType
+  );
+
   const { loading, signIn } = useSignin();
 
-  // Get the query parameters
+  const navigate = useNavigate();
+
   const queryParams = new URLSearchParams(window.location.search);
   const urlParam = queryParams.get("url") as string; // Extract the 'url' query parameter
 
@@ -28,6 +36,12 @@ export default function Signin() {
 
     await signIn(data, redirect);
   };
+
+  useEffect(() => {
+    if (user) {
+      navigate("/home");
+    }
+  }, [user]);
 
   return (
     <>

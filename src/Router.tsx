@@ -2,7 +2,6 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Home from "./pages/Home";
 import Profile from "./pages/Profile";
-import Resource from "./pages/Resource";
 import Signin from "./pages/Signin";
 import Signup from "./pages/Signup";
 import Help from "./pages/Help";
@@ -19,16 +18,9 @@ const Router = () => {
         <Route path="/" element={<Landing />} />
         <Route path="/help" element={<Help />} />
         <Route path="/contact-us" element={<ContactUs />} />
+        <Route path="/signin" element={<Signin />} />
 
         {/* ONLY LOGGED OUT ROUTES  */}
-        <Route
-          path="/signin"
-          element={
-            // <OnlyPublic>
-            <Signin />
-            // </OnlyPublic>
-          }
-        />
         <Route
           path="/signup"
           element={
@@ -52,14 +44,6 @@ const Router = () => {
           element={
             <RequireAuth>
               <Profile />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/resource/:id"
-          element={
-            <RequireAuth>
-              <Resource />
             </RequireAuth>
           }
         />

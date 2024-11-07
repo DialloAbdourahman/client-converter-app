@@ -1,3 +1,5 @@
+import { VideoStates } from "../utils/video-states";
+
 export type User = {
   id: string;
   email: string;
@@ -10,4 +12,20 @@ export type User = {
   version: number;
   updatedAt: string;
   createdAt: string;
+};
+
+export type Resource = {
+  resource: {
+    id: string;
+    name: string;
+    video: string;
+    audio: string;
+    size: number;
+    user: User;
+    status: VideoStates;
+    updatedAt: string;
+    createdAt: string;
+  };
+  videoUrl?: string;
+  audioUrl?: string;
 };

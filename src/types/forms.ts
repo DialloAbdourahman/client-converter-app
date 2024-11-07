@@ -22,3 +22,11 @@ export type UpdatePasswordFormType = {
   newPassword: string;
   confirmNewPassword: string;
 };
+
+export type UploadResourceFormType = {
+  name: string;
+  video: {
+    0: File;
+    length: number;
+  };
+};
