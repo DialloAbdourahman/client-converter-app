@@ -4,14 +4,15 @@ import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/20/solid";
 import { VideoStates } from "../utils/video-states";
 import { useGetResources, useRetryResource } from "../api/ResourceApi";
+import { Link } from "react-router-dom";
 
-const statuses: { [key: string]: string } = {
+export const statuses: { [key: string]: string } = {
   [VideoStates.COMPLETE]: "text-green-700 bg-green-50 ring-green-600/20",
   [VideoStates.UPLOADED]: "text-gray-600 bg-gray-50 ring-gray-500/10",
   [VideoStates.FAILED]: "text-yellow-800 bg-yellow-50 ring-yellow-600/20",
 };
 
-function classNames(...classes: string[]) {
+export function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
@@ -76,51 +77,61 @@ const SingleResource = ({ item, page, setToBeDeletedResource }: Props) => {
             : "Preview video"}
           <span className="sr-only">, {resource.name}</span>
         </a>
-        {resource.status !== VideoStates.UPLOADED && (
-          <Menu as="div" className="relative flex-none">
-            <MenuButton className="-m-2.5 block p-2.5 text-gray-500 hover:text-gray-900">
-              <span className="sr-only">Open options</span>
-              <EllipsisVerticalIcon aria-hidden="true" className="h-5 w-5" />
-            </MenuButton>
-            <MenuItems
-              transition
-              className="absolute right-0 z-10 mt-2 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
-            >
-              {resource.status === VideoStates.COMPLETE && (
-                <MenuItem>
-                  <a
-                    href={item.audioUrl}
-                    className="block px-3 py-1 text-sm/6 text-gray-900 data-[focus]:bg-gray-50 data-[focus]:outline-none w-full text-left cursor-pointer"
-                  >
-                    Download
-                  </a>
-                </MenuItem>
-              )}
-              {resource.status === VideoStates.FAILED && !loading && (
+        <Menu as="div" className="relative flex-none">
+          <MenuButton className="-m-2.5 block p-2.5 text-gray-500 hover:text-gray-900">
+            <span className="sr-only">Open options</span>
+            <EllipsisVerticalIcon aria-hidden="true" className="h-5 w-5" />
+          </MenuButton>
+          <MenuItems
+            transition
+            className="absolute right-0 z-10 mt-2 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+          >
+            <MenuItem>
+              <Link
+                to={`/resource/${resource.id}`}
+                className="block px-3 py-1 text-sm/6 text-gray-900 data-[focus]:bg-gray-50 data-[focus]:outline-none w-full text-left cursor-pointer"
+              >
+                View more
+              </Link>
+            </MenuItem>
+            {resource.status !== VideoStates.UPLOADED && (
+              <>
+                {resource.status === VideoStates.COMPLETE && (
+                  <MenuItem>
+                    <a
+                      href={item.audioUrl}
+                      className="block px-3 py-1 text-sm/6 text-gray-900 data-[focus]:bg-gray-50 data-[focus]:outline-none w-full text-left cursor-pointer"
+                    >
+                      Download
+                    </a>
+                  </MenuItem>
+                )}
+                {resource.status === VideoStates.FAILED && !loading && (
+                  <MenuItem>
+                    <button
+                      onClick={async () => {
+                        await retry(resource.id);
+                        await getResources(page);
+                      }}
+                      className="block px-3 py-1 text-sm/6 text-gray-900 data-[focus]:bg-gray-50 data-[focus]:outline-none w-full text-left cursor-pointer"
+                    >
+                      Retry
+                    </button>
+                  </MenuItem>
+                )}
                 <MenuItem>
                   <button
-                    onClick={async () => {
-                      await retry(resource.id);
-                      await getResources(page);
-                    }}
-                    className="block px-3 py-1 text-sm/6 text-gray-900 data-[focus]:bg-gray-50 data-[focus]:outline-none w-full text-left cursor-pointer"
+                    onClick={() => setToBeDeletedResource(item)}
+                    className="block px-3 py-1 text-sm/6 text-gray-900 data-[focus]:bg-gray-50 data-[focus]:outline-none w-full text-left"
                   >
-                    Retry
+                    Delete
+                    <span className="sr-only">, {resource.name}</span>
                   </button>
                 </MenuItem>
-              )}
-              <MenuItem>
-                <button
-                  onClick={() => setToBeDeletedResource(item)}
-                  className="block px-3 py-1 text-sm/6 text-gray-900 data-[focus]:bg-gray-50 data-[focus]:outline-none w-full text-left"
-                >
-                  Delete
-                  <span className="sr-only">, {resource.name}</span>
-                </button>
-              </MenuItem>
-            </MenuItems>
-          </Menu>
-        )}
+              </>
+            )}
+          </MenuItems>
+        </Menu>
       </div>
     </li>
   );

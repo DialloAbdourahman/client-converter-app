@@ -9,6 +9,7 @@ import ContactUs from "./pages/ContactUs";
 import NotFound from "./pages/NotFound";
 import RequireAuth from "./protect-routes/RequireAuth";
 import OnlyPublic from "./protect-routes/OnlyPublic";
+import Resource from "./pages/Resource";
 
 const Router = () => {
   return (
@@ -44,6 +45,14 @@ const Router = () => {
           element={
             <RequireAuth>
               <Profile />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/resource/:id"
+          element={
+            <RequireAuth>
+              <Resource />
             </RequireAuth>
           }
         />

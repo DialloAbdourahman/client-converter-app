@@ -210,3 +210,45 @@ export const useRetryResource = () => {
 
   return { retry, loading };
 };
+
+export const useGetResource = () => {
+  const [loading, setLoading] = useState(false);
+  const [resource, setResource] = useState<Resource | null>(null);
+  const [notFound, setNotFound] = useState(false);
+  const { axios } = useAxios();
+
+  const getResource = async (id: string) => {
+    try {
+      setLoading(true);
+      setNotFound(false);
+      const { data } = await axios.get<SingleItemResponseType<Resource>>(
+        `${API_URL}/${id}`
+      );
+      if (data.code === SUCCESS_CODE.SUCCESS) {
+        setResource(data.data);
+      }
+    } catch (err) {
+      const error = err as AxiosError<ErrorResponseType>;
+      const code = error.response?.data.code;
+
+      console.log(error);
+
+      switch (code) {
+        case CODE.NOT_FOUND:
+          failedToast("Resource does not exist");
+          setNotFound(true);
+          break;
+        case CODE.UNEXPECTED_ERROR:
+          failedToast("Unexpected error occured");
+          break;
+        default:
+          failedToast("Something went wrong");
+          break;
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { getResource, loading, resource, notFound };
+};

@@ -15,6 +15,7 @@ export type User = {
 };
 
 export type Resource = {
+  status: any;
   resource: {
     id: string;
     name: string;
