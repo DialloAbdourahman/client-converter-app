@@ -30,3 +30,12 @@ export type UploadResourceFormType = {
     length: number;
   };
 };
+
+export type ForgotPasswordFormType = {
+  email: string;
+};
+
+export type ResetPasswordFormType = {
+  password: string;
+  confirmPassword: string;
+};

@@ -1,7 +1,9 @@
 import { useState } from "react";
 import {
   CreateAccountFormType,
+  ForgotPasswordFormType,
   LoginFormType,
+  ResetPasswordFormType,
   UpdateAccountFormType,
   UpdatePasswordFormType,
 } from "../types/forms";
@@ -24,7 +26,7 @@ const API_URL = "/api/users";
 
 export const useSignUp = () => {
   const [loading, setLoading] = useState(false);
-  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { axios } = useAxios();
 
   const signUp = async (userFormData: CreateAccountFormType) => {
@@ -35,7 +37,8 @@ export const useSignUp = () => {
       });
 
       if (data.code === SUCCESS_CODE.SUCCESS) {
-        dispatch(setUser(data.data));
+        successToast("Check your email to activate your account");
+        navigate("/signin");
       } else {
         throw new Error();
       }
@@ -54,6 +57,11 @@ export const useSignUp = () => {
           break;
         case CODE.UNEXPECTED_ERROR:
           failedToast("Unexpected error occured");
+          break;
+        case CODE.ACCOUNT_NOT_ACTIVATED:
+          failedToast(
+            "Your account has been created already, check your email to activate it."
+          );
           break;
         default:
           failedToast("Something went wrong");
@@ -300,4 +308,159 @@ export const useRefreshToken = () => {
   };
 
   return { refreshToken };
+};
+
+export const useActivateAccount = () => {
+  const navigate = useNavigate();
+  const { axios } = useAxios();
+
+  const activateAccount = async (code: string) => {
+    try {
+      const { data } = await axios.post<SimpleSuccessResponseType>(
+        `${API_URL}/activate`,
+        {
+          code,
+        }
+      );
+
+      if (data.code === SUCCESS_CODE.SUCCESS) {
+        successToast(
+          "Your account has been activated successfully. You can now login."
+        );
+        navigate("/signin");
+      } else {
+        throw new Error();
+      }
+    } catch (err) {
+      const error = err as AxiosError<ErrorResponseType>;
+      const code = error.response?.data.code;
+
+      console.log(error);
+
+      switch (code) {
+        case CODE.NOT_FOUND:
+          failedToast("User does not exist");
+          break;
+        case CODE.VALIDATION_REQUEST_ERROR:
+          failedToast("Make sure you enter the correct info");
+          break;
+        case CODE.UNEXPECTED_ERROR:
+          failedToast("Unexpected error occured");
+          break;
+        default:
+          failedToast("Something went wrong");
+          break;
+      }
+    }
+  };
+
+  return { activateAccount };
+};
+
+export const useForgotPassword = () => {
+  const [loading, setLoading] = useState(false);
+  const { axios } = useAxios();
+
+  const forgotPassword = async (userFormData: ForgotPasswordFormType) => {
+    try {
+      setLoading(true);
+
+      const { data } = await axios.post<SimpleSuccessResponseType>(
+        `${API_URL}/forgot-password`,
+        {
+          ...userFormData,
+        }
+      );
+
+      if (data.code === SUCCESS_CODE.SUCCESS) {
+        successToast("Check your email to reset your password");
+      } else {
+        throw new Error();
+      }
+    } catch (err) {
+      const error = err as AxiosError<ErrorResponseType>;
+      const code = error.response?.data.code;
+
+      console.log(error);
+
+      switch (code) {
+        case CODE.NOT_FOUND:
+          failedToast("Account does not exist");
+          break;
+        case CODE.VALIDATION_REQUEST_ERROR:
+          failedToast("Make sure you enter the correct info");
+          break;
+        case CODE.ACCOUNT_NOT_ACTIVATED:
+          failedToast("First check your email to activate your account");
+          break;
+        case CODE.UNEXPECTED_ERROR:
+          failedToast("Unexpected error occured");
+          break;
+        default:
+          failedToast("Something went wrong");
+          break;
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { loading, forgotPassword };
+};
+
+export const useResetPassword = () => {
+  const [loading, setLoading] = useState(false);
+  const { axios } = useAxios();
+  const navigate = useNavigate();
+
+  const resetPassword = async (
+    userFormData: ResetPasswordFormType,
+    code: string
+  ) => {
+    try {
+      setLoading(true);
+
+      const { data } = await axios.post<SimpleSuccessResponseType>(
+        `${API_URL}/reset-password`,
+        {
+          code,
+          password: userFormData.password,
+        }
+      );
+
+      if (data.code === SUCCESS_CODE.SUCCESS) {
+        successToast("Password has been reset successfully");
+        navigate("/signin");
+      } else {
+        throw new Error();
+      }
+    } catch (err) {
+      const error = err as AxiosError<ErrorResponseType>;
+      const code = error.response?.data.code;
+
+      console.log(error);
+
+      switch (code) {
+        case CODE.NOT_FOUND:
+          failedToast("Account does not exist");
+          break;
+        case CODE.VALIDATION_REQUEST_ERROR:
+          failedToast("Make sure you enter the correct info");
+          break;
+        case CODE.ACCOUNT_NOT_ACTIVATED:
+          failedToast("First check your email to activate your account");
+          break;
+        case CODE.UNEXPECTED_ERROR:
+          failedToast("Unexpected error occured");
+          break;
+        default:
+          failedToast("Something went wrong");
+          break;
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { loading, resetPassword };
 };

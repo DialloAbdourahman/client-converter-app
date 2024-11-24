@@ -10,6 +10,9 @@ import NotFound from "./pages/NotFound";
 import RequireAuth from "./protect-routes/RequireAuth";
 import OnlyPublic from "./protect-routes/OnlyPublic";
 import Resource from "./pages/Resource";
+import ActivateAccount from "./pages/ActivateAccount";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const Router = () => {
   return (
@@ -20,6 +23,9 @@ const Router = () => {
         <Route path="/help" element={<Help />} />
         <Route path="/contact-us" element={<ContactUs />} />
         <Route path="/signin" element={<Signin />} />
+        <Route path="/activate" element={<ActivateAccount />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset" element={<ResetPassword />} />
 
         {/* ONLY LOGGED OUT ROUTES  */}
         <Route
